@@ -44,18 +44,22 @@ def sttThuoctinh(s, j):
     for i in range(len(prop[j])):
         if s == prop[j][i]:
             return i
+
 def tinh_Pxi(dataset,xi,j,p):
     count = 0
     for i in range(len(dataset)):
           if dataset[i][j] == xi:
               count=count+1
+    # print(p, (count+0.001)/(len(dataset)+0.001*p))
     return (count+0.001)/(len(dataset)+0.001*p)
+
 def tinhPci_x(y,i):
              a=0
              for j in range(31):
-                 b=sttThuoctinh(y[j],j)
-                 a=a+math.log10(x[i][j][b])
-             return a+math.log10(c[i])
+                b=sttThuoctinh(y[j],j)
+                a += math.log10(x[i][j][b])
+             return a + math.log10(c[i])
+
 def argMax(y):
     max=-9999999999
     tg=0
@@ -64,8 +68,8 @@ def argMax(y):
         if max<a:
             max=a
             tg=i
-            print(a)
     return tg
+    
 def getLable(x):
     if x=='A':
         return 4
@@ -85,12 +89,10 @@ def converData(dataset):
         for j in range(len(prop[i])):
             if dataset[k][i] == prop[i][j]:
                 dataset[k][i]=j
+
 def main():
     train = 'train.csv'
     datasetTrain = load_data(train)
-    for i in range(len(datasetTrain)):
-         for j in range(len(datasetTrain[i])):
-             print(datasetTrain[i][j])
     a,b,f,d,e = get_data_ci(datasetTrain)
     Ci.append(np.array(a))
     Ci.append(np.array(b))
@@ -153,6 +155,7 @@ def main():
     prop[11].append('mother'    )
     prop[11].append('father'    )
     prop[11].append('other')
+
     prop[12].append('1'    )
     prop[12].append('2'    )
     prop[12].append('3'    )
@@ -246,12 +249,12 @@ def main():
     prop[31].append('D')
     prop[31].append('F')
     for i in range (5):
-        for j in range(31):
+        for j in range(31):         #range(31) = 0 -> 30
             a=0
             for k in range(len(prop[j])):
-                 x[i][j][k]=tinh_Pxi(Ci[i],prop[j][k],j,len(prop[j]))
+                x[i][j][k]=tinh_Pxi(Ci[i],prop[j][k],j,len(prop[j]))
 
-    datatest = load_data('test1.csv')
+    datatest = load_data('test.csv')
     res=0
     count=len(datatest)
     for i in range(count):
