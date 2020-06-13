@@ -3,7 +3,7 @@ import math
 import numpy as np
 from collections import defaultdict
 from sklearn.cluster import KMeans
-# from sklearn.naive_bayes import GaussianNB,MultinomialNB,CategoricalNB,ComplementNB,BaseDiscreteNB
+
 # x[i][j][k] = P(Xjk|ci)
 x = defaultdict(lambda :defaultdict(lambda :defaultdict(int)))
 #dataset have label = ci
@@ -54,6 +54,7 @@ def tinhPci_x(y,i):
              a=0
              for j in range(31):
                  b=sttThuoctinh(y[j],j)
+                 print(x[i][j][b])
                  a=a+math.log10(x[i][j][b])
              return a+math.log10(c[i])
 def argMax(y):
@@ -88,9 +89,6 @@ def converData(dataset):
 def main():
     train = 'train.csv'
     datasetTrain = load_data(train)
-    for i in range(len(datasetTrain)):
-         for j in range(len(datasetTrain[i])):
-             print(datasetTrain[i][j])
     a,b,f,d,e = get_data_ci(datasetTrain)
     Ci.append(np.array(a))
     Ci.append(np.array(b))
