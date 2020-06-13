@@ -1,16 +1,9 @@
 import csv
-import math
+import random
+
 import numpy as np
 from collections import defaultdict
-# from sklearn.naive_bayes import GaussianNB,MultinomialNB,CategoricalNB,ComplementNB,BaseDiscreteNB
-# x[i][j][k] = P(Xjk|ci)
-x = defaultdict(lambda :defaultdict(lambda :defaultdict(int)))
-#dataset have label = ci
-Ci = []
-# P(ci)
-c = []
 
-labels = [0,0,0,0,0]
 prop = [[] for _ in range(32)]
 
 
@@ -32,6 +25,15 @@ def load_data(filename):
     return dataset
 
 
+def split_data(dataset, splitRatio):
+    trainSize = int(len(dataset) * splitRatio)
+    trainSet = []
+    copy = list(dataset)
+    while len(trainSet) < trainSize:
+        index = random.randrange(len(copy))
+        trainSet.append(copy.pop(index))
+
+    return [trainSet, copy]
 
 #     chuyen du lieu chu sang so
 def converData(dataset):
@@ -56,11 +58,13 @@ def init_centers(X):
 def group_data(X, centers,weigh):
     y = np.zeros(X.shape[0])
     for i in range(X.shape[0]):
-        d=[]
-        for j in range(len(centers)):
-            d.append(doDai(X[i]-centers[j],weigh))
+        d=[0,0,0,0,0]
+        d[0] = khoangCach(X[i], centers[0],weigh)
+        d[1] = khoangCach(X[i], centers[1],weigh)
+        d[2] = khoangCach(X[i], centers[2],weigh)
+        d[3] = khoangCach(X[i], centers[3],weigh)
+        d[4] = khoangCach(X[i], centers[4],weigh)
         y[i] = np.argmin(d)
-
     return y
 # 3. Update center points
 def update_centers(X, y, k):
@@ -85,6 +89,7 @@ def _kmeans(X, k,weigh):
         #  update centers
         centers = update_centers(X, y, k)
     return (centers, y)
+
 def xacDinhCumX(X,center,weight):
     min=6;
     minKC=9999999
@@ -93,11 +98,11 @@ def xacDinhCumX(X,center,weight):
             min=i
             minKC=khoangCach(X,center[i],weight)
     return min
-def doDai(X,weigh):
+def doDaiVector(X,weigh):
     count=0
     for i in range(len(X)):
-        count+= X[i]*X[i]*weigh[i]
-    return  count
+        count+=X[i]*X[i]*weigh[i]
+    return count
 def khoangCach(X,Y,weight):
     d=X-Y;
     cout=0
@@ -134,28 +139,28 @@ def xacDinhNhanCum(clusster,label):
             elif label[clusster[i]] == 4:
                 a[4] += 1
         for i in range(5):
-            if(max<a[i]):
-                max=a[i]
-                tg=i
-        return a[0]/len(clusster),a[1]/len(clusster),a[2]/len(clusster),a[3]/len(clusster),a[4]/len(clusster)
+            a[i]=a[i]/len(clusster)
 
-def xacDinhNhanVD(exampl,center,weight):
+        return a
+
+def xacDinhNhanVD(exampl,center,weight,labels):
        return labels[xacDinhCumX(exampl,center,weight)]
 
-
-def xacDinhNhanCumFinal(label):
-    a = []
-    c = [[],[],[],[],[]]
-    c[0]=xacDinhNhanCum(clusster[0], label)
+def xanDinhNhanCumFinal(label):
+    c = [[], [], [], [], []]
+    c[0]=xacDinhNhanCum(clusster[0],label)
     c[1]=xacDinhNhanCum(clusster[1], label)
     c[2]=xacDinhNhanCum(clusster[2], label)
     c[3]=xacDinhNhanCum(clusster[3], label)
     c[4]=xacDinhNhanCum(clusster[4], label)
+    # xac dinh nhan cum
+    clusster_label = [-1,-1,-1,-1,-1]
+    a=[]
     for i in range(25):
         a.append(c[i//5][i%5])
-    b = []
-    d = []
-    save = []
+    b=[]
+    d=[]
+    save=[]
     for i in range(5):
         b.append(0)
         d.append(0)
@@ -170,23 +175,27 @@ def xacDinhNhanCumFinal(label):
     while dem and dem1:
         max = -1.0
         for i in range(25):
-            if max<a[i] and ( (a[i]<kt and a[i]>0) or (a[i]==0) ) and not c[i]:
-                max = a[i]
-                tg= i
+            if max<a[i] and ( (a[i]<kt and a[i]>0)or(a[i]==0) ) and not c[i]:
+                max= a[i]
+                tg=i
         kt = max
-        j=tg//5
-        k=tg%5
-        dem-=1
+        j = tg // 5
+        k = tg % 5
+        dem -= 1
         if not b[j] and not c[tg] and not d[k]:
             b[j] +=1
-            c[tg] +=1
+            c[tg]+=1
             d[k]+=1
-            save[j] = k
+            save[j]=k
             dem1-=1
-        c[tg]=1
+        c[tg] = 1
     return save
-def main():
 
+
+def main():
+    data_kmean = 'data_kmean.csv'
+    dataset = load_data(data_kmean)
+    datasetTrain, datasetTest = split_data(dataset, 5 / 6)
     prop[0].append('GP')
     prop[0].append('MS')
 
@@ -277,7 +286,7 @@ def main():
     prop[31].append('D')
     prop[31].append('F')
 
-    # weigh
+    # trong so cua thuoc tinh
     weigh = []
     for i in range(31):
 
@@ -286,35 +295,33 @@ def main():
             # weigh.append(1)
         else:
             weigh.append(1)
+    weigh = np.array(weigh)
 
     # dataset duoi dang so de dung kmean
-    train = 'train1.csv'
-    datasetTrain = load_data(train)
     datasetTrain = np.array(datasetTrain)
     converData(datasetTrain)
     datasetTrain = datasetTrain.astype(np.int)
     data,label=get_data_label(datasetTrain)
     data=np.array(data)
-
-
     print('Centers found by code tay:')
     centers=_kmeans(data,5,weigh)
     centers=np.array(centers[0])
-    print(centers)
+    for i in range(5):
+      print(centers[i][29])
     print('Xac dinh nhan cum:')
-    xacDinhTapDataCum(data, centers,weigh)
-    labels=xacDinhNhanCumFinal(label)
+    xacDinhTapDataCum(data,centers,weigh)
+    labels=xanDinhNhanCumFinal(label)
     print(labels)
-    print(('Xac dinh nhan lop:'))
-    datatest = load_data('test1.csv')
-    datatest = np.array(datatest)
-    converData(datatest)
-    datatest = datatest.astype(np.int)
-    data1, label = get_data_label(datatest)
-    data1 = np.array(data1)
+    print(('Test....:'))
+    test = datasetTest
+    test = np.array(test)
+    converData(test)
+    test = test.astype(np.int)
+    data, label = get_data_label(test)
+    data = np.array(data)
     res=0
-    for i in range(len(data1)):
-        if xacDinhNhanVD(data1[i],centers,weigh)==label[i]:
+    for i in range(len(data)):
+        if xacDinhNhanVD(data[i],centers,weigh,labels)==label[i]:
             res+=1
     print(res*100/len(data))
 
