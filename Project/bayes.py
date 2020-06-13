@@ -1,8 +1,9 @@
 import csv
 import math
+import random
 import numpy as np
 from collections import defaultdict
-from sklearn.cluster import KMeans
+
 
 # x[i][j][k] = P(Xjk|ci)
 x = defaultdict(lambda :defaultdict(lambda :defaultdict(int)))
@@ -39,6 +40,15 @@ def get_data_ci(dataset):
             c4.append(dataset[i])
     return c0, c1, c2, c3, c4
 
+def split_data(dataset, splitRatio):
+    trainSize = int(len(dataset) * splitRatio)
+    trainSet = []
+    copy = list(dataset)
+    while len(trainSet) < trainSize:
+        index = random.randrange(len(copy))
+        trainSet.append(copy.pop(index))
+
+    return [trainSet, copy]
 
 def sttThuoctinh(s, j):
     for i in range(len(prop[j])):
@@ -53,8 +63,9 @@ def tinh_Pxi(dataset,xi,j,p):
 def tinhPci_x(y,i):
              a=0
              for j in range(31):
+                 if j>=24 and j<=28 or j==10:
+                     continue
                  b=sttThuoctinh(y[j],j)
-                 print(x[i][j][b])
                  a=a+math.log10(x[i][j][b])
              return a+math.log10(c[i])
 def argMax(y):
@@ -65,7 +76,6 @@ def argMax(y):
         if max<a:
             max=a
             tg=i
-            print(a)
     return tg
 def getLable(x):
     if x=='A':
@@ -87,8 +97,9 @@ def converData(dataset):
             if dataset[k][i] == prop[i][j]:
                 dataset[k][i]=j
 def main():
-    train = 'train.csv'
-    datasetTrain = load_data(train)
+    data_bayes = 'data_bayes.csv'
+    dataset = load_data(data_bayes)
+    datasetTrain,datasetTest=split_data(dataset,5/6)
     a,b,f,d,e = get_data_ci(datasetTrain)
     Ci.append(np.array(a))
     Ci.append(np.array(b))
@@ -248,14 +259,12 @@ def main():
             a=0
             for k in range(len(prop[j])):
                  x[i][j][k]=tinh_Pxi(Ci[i],prop[j][k],j,len(prop[j]))
-
-    datatest = load_data('test1.csv')
     res=0
-    count=len(datatest)
+    count=len(datasetTest)
     for i in range(count):
-          if argMax(datatest[i])==getLable(datatest[i][31]):
+          if argMax(datasetTest[i])==getLable(datasetTest[i][31]):
               res+=1
-    print('arc:',res*100/count)
+    print('Accuracy:',res*100/count)
     print("-------------------------")
 
 
