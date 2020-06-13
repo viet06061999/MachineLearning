@@ -1,15 +1,6 @@
 import csv
-import math
 import numpy as np
 from collections import defaultdict
-from sklearn.cluster import KMeans
-# from sklearn.naive_bayes import GaussianNB,MultinomialNB,CategoricalNB,ComplementNB,BaseDiscreteNB
-# x[i][j][k] = P(Xjk|ci)
-x = defaultdict(lambda :defaultdict(lambda :defaultdict(int)))
-#dataset have label = ci
-Ci = []
-# P(ci)
-c = []
 
 prop = [[] for _ in range(32)]
 
@@ -191,8 +182,6 @@ def xanDinhNhanCumFinal(label):
 
 
 def main():
-    train = 'train1.csv'
-    datasetTrain = load_data(train)
     prop[0].append('GP')
     prop[0].append('MS')
 
@@ -283,48 +272,45 @@ def main():
     prop[31].append('D')
     prop[31].append('F')
 
-    # dataset duoi dang so de dung kmean
-
-    dataset = datasetTrain
-    dataset = np.array(dataset)
-    converData(dataset)
-    dataset = dataset.astype(np.int)
-    data,label=get_data_label(dataset)
-    data=np.array(data)
-    weigh=[]
+    # trong so cua thuoc tinh
+    weigh = []
     for i in range(31):
 
         if prop[i][0] != None:
-            weigh.append(10/len(prop[i]))
+            weigh.append(10 / len(prop[i]))
             # weigh.append(1)
         else:
             weigh.append(1)
     weigh = np.array(weigh)
-    kmeans = KMeans(n_clusters=5, random_state=5).fit(data)
-    print('Centers found by scikit-learn:')
-    result=kmeans.cluster_centers_
-    for i in range(5):
-     print(result[i][30])
+
+    # dataset duoi dang so de dung kmean
+    train = 'train1.csv'
+    datasetTrain = load_data(train)
+    datasetTrain = np.array(datasetTrain)
+    converData(datasetTrain)
+    datasetTrain = datasetTrain.astype(np.int)
+    data,label=get_data_label(datasetTrain)
+    data=np.array(data)
     print('Centers found by code tay:')
-    datatest1=_kmeans(data,5,weigh)
-    datatest1=np.array(datatest1[0])
+    centers=_kmeans(data,5,weigh)
+    centers=np.array(centers[0])
     for i in range(5):
-      print(datatest1[i][30])
+      print(centers[i][29])
     print('Xac dinh nhan cum:')
-    xacDinhTapDataCum(data, datatest1,weigh)
+    xacDinhTapDataCum(data,centers,weigh)
     labels=xanDinhNhanCumFinal(label)
     print(labels)
-    print(('Xac dinh nhan lop:'))
+    print(('Test....:'))
     datatest = load_data('test1.csv')
-    dataset = datatest
-    dataset = np.array(dataset)
-    converData(dataset)
-    dataset = dataset.astype(np.int)
-    data, label = get_data_label(dataset)
+    test = datatest
+    test = np.array(test)
+    converData(test)
+    test = test.astype(np.int)
+    data, label = get_data_label(test)
     data = np.array(data)
     res=0
     for i in range(len(data)):
-        if xacDinhNhanVD(data[i],datatest1,weigh,labels)==label[i]:
+        if xacDinhNhanVD(data[i],centers,weigh,labels)==label[i]:
             res+=1
     print(res*100/len(data))
 
